@@ -1,0 +1,157 @@
+#include <iostream>             // Biblioteca para entrada y salida estándar (cout, cin)
+#include <string.h>             // Biblioteca para funciones con cadenas tipo C (strcpy)
+
+using namespace std;            // Permite usar cout, cin, etc., sin anteponer std::
+
+// Definición de la estructura Nodo
+struct Nodo {
+    int id;                     // ID del proceso o bloque de memoria
+    char nombre[50];           // Nombre del proceso (máx 49 caracteres + '\0')
+    Nodo* siguiente;           // Puntero al siguiente nodo (lista, cola o pila)
+};
+
+// Declaración de punteros globales para las estructuras de datos
+Nodo* listaProcesos = NULL;     // Lista enlazada de procesos registrados
+Nodo* frenteColaCPU = NULL;     // Frente de la cola de procesos (para ejecución)
+Nodo* finalColaCPU = NULL;      // Final de la cola
+Nodo* cimaMemoria = NULL;       // Cima de la pila de bloques de memoria
+
+// === FUNCIONES PARA MANEJAR LA LISTA DE PROCESOS ===
+void registrarProceso(int id, const char nombre[]) {
+    Nodo* nuevo = new Nodo();                   // Crea nuevo nodo dinámicamente
+    nuevo->id = id;                             // Asigna el ID al nuevo nodo
+    strcpy(nuevo->nombre, nombre);              // Copia el nombre al nuevo nodo
+    nuevo->siguiente = listaProcesos;           // Apunta al nodo actual de la lista
+    listaProcesos = nuevo;                      // Actualiza el inicio de la lista
+    cout << "Proceso registrado." << endl;      // Mensaje de confirmación
+}
+
+void mostrarProcesos() {
+    Nodo* temp = listaProcesos;                 // Nodo temporal para recorrer la lista
+    if (temp == NULL) {                         // Si la lista está vacía
+        cout << "No hay procesos registrados." << endl;
+        return;
+    }
+    while (temp != NULL) {                      // Recorre la lista mientras haya nodos
+        cout << "ID: " << temp->id << ", Nombre: " << temp->nombre << endl;
+        temp = temp->siguiente;                 // Pasa al siguiente nodo
+    }
+}
+
+// === FUNCIONES PARA MANEJAR LA COLA ===
+void agregarACola(int id, const char nombre[]) {
+    Nodo* nuevo = new Nodo();                   // Crea nuevo nodo
+    nuevo->id = id;                             // Asigna ID
+    strcpy(nuevo->nombre, nombre);              // Copia nombre
+    nuevo->siguiente = NULL;                    // Es el último de la cola
+
+    if (finalColaCPU == NULL) {                 // Si la cola está vacía
+        frenteColaCPU = finalColaCPU = nuevo;   // Apunta tanto al frente como al final
+    } else {
+        finalColaCPU->siguiente = nuevo;        // Enlaza al final actual
+        finalColaCPU = nuevo;                   // Actualiza el final
+    }
+    cout << "Proceso agregado a cola ." << endl; // Mensaje de confirmación
+}
+
+void ejecutarSiguienteProceso() {
+    if (frenteColaCPU == NULL) {                // Si la cola está vacía
+        cout << "No hay procesos en cola para ejecutar." << endl;
+        return;
+    }
+
+    Nodo* temp = frenteColaCPU;                 // Guarda el nodo al frente
+    cout << "Ejecutando proceso: " << temp->nombre << " (ID: " << temp->id << ")" << endl;
+
+    frenteColaCPU = frenteColaCPU->siguiente;   // Mueve el frente al siguiente nodo
+    delete temp;                                // Libera la memoria del nodo anterior
+
+    if (frenteColaCPU == NULL)                  // Si la cola quedó vacía
+        finalColaCPU = NULL;                    // También se vacía el final
+}
+
+// === FUNCIONES PARA MANEJAR LA PILA ===
+void asignarBloqueMemoria(int id) {
+    Nodo* nuevo = new Nodo();                   // Crea un nuevo nodo
+    nuevo->id = id;                             // Asigna el ID del bloque
+    nuevo->siguiente = cimaMemoria;             // Apunta a la cima actual de la pila
+    cimaMemoria = nuevo;                        // El nuevo nodo es ahora la cima
+    cout << "Bloque en pila asignado." << endl; // Mensaje de confirmación
+}
+
+void liberarBloqueMemoria() {
+    if (cimaMemoria == NULL) {                  // Si la pila está vacía
+        cout << "No hay bloques en la pila." << endl;
+        return;
+    }
+
+    Nodo* temp = cimaMemoria;                   // Nodo temporal para liberar
+    cout << "Liberando bloque de memoria (ID: " << temp->id << ")" << endl;
+    cimaMemoria = cimaMemoria->siguiente;       // La nueva cima es el siguiente nodo
+    delete temp;                                // Libera el nodo anterior
+}
+
+// === MENÚ PRINCIPAL ===
+int main() {
+    int opcion, id;                             // Variables para opción e ID
+    char nombre[50];                            // Nombre del proceso
+
+    do {
+        // Muestra el menú de opciones
+        cout << "\n=== SISTEMA DE GESTIÓN DE PROCESOS ===" << endl;
+        cout << "1. Registrar proceso" << endl;
+        cout << "2. Mostrar procesos" << endl;
+        cout << "3. Agregar proceso a la Cola" << endl;
+        cout << "4. Ejecutar siguiente proceso de cola" << endl;
+        cout << "5. Asignar proceso a Pila" << endl;
+        cout << "6. Liberar Pila" << endl;
+        cout << "7. Salir" << endl;
+        cout << "Ingrese opción: ";
+        cin >> opcion;                          // Lee la opción del usuario
+
+        switch (opcion) {
+            case 1:
+                cout << "Ingrese ID del proceso: ";
+                cin >> id;                      // Solicita el ID
+                cout << "Ingrese nombre del proceso: ";
+                cin >> nombre;                  // Solicita el nombre
+                registrarProceso(id, nombre);   // Llama a la función para registrar
+                break;
+
+            case 2:
+                mostrarProcesos();              // Llama a la función para mostrar procesos
+                break;
+
+            case 3:
+                cout << "Ingrese ID del proceso: ";
+                cin >> id;
+                cout << "Ingrese nombre del proceso: ";
+                cin >> nombre;
+                agregarACola(id, nombre);       // Llama a la función para agregar a la cola
+                break;
+
+            case 4:
+                ejecutarSiguienteProceso();     // Llama a la función para ejecutar proceso
+                break;
+
+            case 5:
+                cout << "Ingrese ID del bloque de memoria: ";
+                cin >> id;
+                asignarBloqueMemoria(id);       // Llama a la función para asignar memoria (pila)
+                break;
+
+            case 6:
+                liberarBloqueMemoria();         // Llama a la función para liberar pila
+                break;
+
+            case 7:
+                cout << "Saliendo..." << endl;  // Mensaje de salida
+                break;
+
+            default:
+                cout << "Opción no válida." << endl;  // Mensaje para opción incorrecta
+        }
+    } while (opcion != 7);                      // Repite mientras no se elija salir
+
+    return 0;                                   // Fin del programa
+}
