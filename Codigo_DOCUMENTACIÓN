@@ -1,0 +1,359 @@
+#include <iostream>    // Incluye la biblioteca para entrada y salida de datos
+#include <string>      // Permite el uso del tipo de dato string
+using namespace std;   // Usa el espacio de nombres estándar para evitar escribir "std::"
+
+// Estructura para representar un miembro del árbol genealógico
+struct Miembro {
+    int id;                    // Identificador único del miembro
+    string nombre;             // Nombre del miembro
+    Miembro* izquierdo;        // Puntero al hijo izquierdo
+    Miembro* derecho;          // Puntero al hijo derecho
+    int altura;                // Altura del nodo (para balanceo AVL)
+};
+
+// Función que devuelve el máximo entre dos valores
+int maximo(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+// Clase del árbol genealógico con balanceo AVL
+class ArbolGenealogicoAVL {
+private:
+    Miembro* raiz;  // Puntero a la raíz del árbol
+
+    // Obtiene la altura de un nodo
+    int obtenerAltura(Miembro* miembro) {
+        if (miembro == nullptr) return 0;
+        return miembro->altura;
+    }
+
+    // Calcula el factor de balance de un nodo
+    int obtenerBalance(Miembro* miembro) {
+        if (miembro == nullptr) return 0;
+        return obtenerAltura(miembro->izquierdo) - obtenerAltura(miembro->derecho);
+    }
+
+    // Realiza rotación simple a la derecha
+    Miembro* rotacionDerecha(Miembro* y) {
+        Miembro* x = y->izquierdo;
+        Miembro* T2 = x->derecho;
+
+        x->derecho = y;
+        y->izquierdo = T2;
+
+        // Actualiza alturas
+        y->altura = maximo(obtenerAltura(y->izquierdo), obtenerAltura(y->derecho)) + 1;
+        x->altura = maximo(obtenerAltura(x->izquierdo), obtenerAltura(x->derecho)) + 1;
+
+        return x;  // Nueva raíz
+    }
+
+    // Realiza rotación simple a la izquierda
+    Miembro* rotacionIzquierda(Miembro* x) {
+        Miembro* y = x->derecho;
+        Miembro* T2 = y->izquierdo;
+
+        y->izquierdo = x;
+        x->derecho = T2;
+
+        // Actualiza alturas
+        x->altura = maximo(obtenerAltura(x->izquierdo), obtenerAltura(x->derecho)) + 1;
+        y->altura = maximo(obtenerAltura(y->izquierdo), obtenerAltura(y->derecho)) + 1;
+
+        return y;  // Nueva raíz
+    }
+
+    // Inserta un miembro en el árbol de forma recursiva
+    Miembro* insertarMiembro(Miembro* nodo, int id, string nombre) {
+        // Inserción normal como en un árbol binario de búsqueda
+        if (nodo == nullptr) {
+            Miembro* nuevo = new Miembro;
+            nuevo->id = id;
+            nuevo->nombre = nombre;
+            nuevo->izquierdo = nullptr;
+            nuevo->derecho = nullptr;
+            nuevo->altura = 1;
+            return nuevo;
+        }
+
+        if (id < nodo->id)
+            nodo->izquierdo = insertarMiembro(nodo->izquierdo, id, nombre);
+        else if (id > nodo->id)
+            nodo->derecho = insertarMiembro(nodo->derecho, id, nombre);
+        else
+            return nodo; // No se permiten IDs duplicados
+
+        // Actualiza altura
+        nodo->altura = 1 + maximo(obtenerAltura(nodo->izquierdo), obtenerAltura(nodo->derecho));
+
+        // Verifica balance y aplica rotaciones si es necesario
+        int balance = obtenerBalance(nodo);
+
+        if (balance > 1 && id < nodo->izquierdo->id)       // Izquierda-Izquierda
+            return rotacionDerecha(nodo);
+
+        if (balance < -1 && id > nodo->derecho->id)        // Derecha-Derecha
+            return rotacionIzquierda(nodo);
+
+        if (balance > 1 && id > nodo->izquierdo->id) {     // Izquierda-Derecha
+            nodo->izquierdo = rotacionIzquierda(nodo->izquierdo);
+            return rotacionDerecha(nodo);
+        }
+
+        if (balance < -1 && id < nodo->derecho->id) {      // Derecha-Izquierda
+            nodo->derecho = rotacionDerecha(nodo->derecho);
+            return rotacionIzquierda(nodo);
+        }
+
+        return nodo;  // Nodo sin desequilibrio
+    }
+
+    // Encuentra el nodo con el valor mínimo en un subárbol
+    Miembro* encontrarMinimo(Miembro* nodo) {
+        Miembro* actual = nodo;
+        while (actual->izquierdo != nullptr)
+            actual = actual->izquierdo;
+        return actual;
+    }
+
+    // Elimina un miembro del árbol
+    Miembro* eliminarMiembro(Miembro* raiz, int id) {
+        if (raiz == nullptr) return raiz;
+
+        if (id < raiz->id)
+            raiz->izquierdo = eliminarMiembro(raiz->izquierdo, id);
+        else if (id > raiz->id)
+            raiz->derecho = eliminarMiembro(raiz->derecho, id);
+        else {
+            if ((raiz->izquierdo == nullptr) || (raiz->derecho == nullptr)) {
+                Miembro* temp = raiz->izquierdo ? raiz->izquierdo : raiz->derecho;
+
+                if (temp == nullptr) {
+                    temp = raiz;
+                    raiz = nullptr;
+                } else {
+                    *raiz = *temp;
+                }
+                delete temp;
+            } else {
+                Miembro* temp = encontrarMinimo(raiz->derecho);
+                raiz->id = temp->id;
+                raiz->nombre = temp->nombre;
+                raiz->derecho = eliminarMiembro(raiz->derecho, temp->id);
+            }
+        }
+
+        if (raiz == nullptr) return raiz;
+
+        // Actualiza altura y balancea
+        raiz->altura = 1 + maximo(obtenerAltura(raiz->izquierdo), obtenerAltura(raiz->derecho));
+        int balance = obtenerBalance(raiz);
+
+        // Aplica rotaciones según el caso
+        if (balance > 1 && obtenerBalance(raiz->izquierdo) >= 0)
+            return rotacionDerecha(raiz);
+
+        if (balance > 1 && obtenerBalance(raiz->izquierdo) < 0) {
+            raiz->izquierdo = rotacionIzquierda(raiz->izquierdo);
+            return rotacionDerecha(raiz);
+        }
+
+        if (balance < -1 && obtenerBalance(raiz->derecho) <= 0)
+            return rotacionIzquierda(raiz);
+
+        if (balance < -1 && obtenerBalance(raiz->derecho) > 0) {
+            raiz->derecho = rotacionDerecha(raiz->derecho);
+            return rotacionIzquierda(raiz);
+        }
+
+        return raiz;
+    }
+
+    // Muestra el árbol en orden (izquierda - raíz - derecha)
+    void mostrarInorden(Miembro* nodo) {
+        if (nodo != nullptr) {
+            mostrarInorden(nodo->izquierdo);
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+            mostrarInorden(nodo->derecho);
+        }
+    }
+
+    // Muestra el árbol en preorden (raíz - izquierda - derecha)
+    void mostrarPreorden(Miembro* nodo) {
+        if (nodo != nullptr) {
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+            mostrarPreorden(nodo->izquierdo);
+            mostrarPreorden(nodo->derecho);
+        }
+    }
+
+    // Muestra el árbol en postorden (izquierda - derecha - raíz)
+    void mostrarPostorden(Miembro* nodo) {
+        if (nodo != nullptr) {
+            mostrarPostorden(nodo->izquierdo);
+            mostrarPostorden(nodo->derecho);
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+        }
+    }
+
+    // Busca si existe un miembro con el ID dado
+    bool buscarMiembro(Miembro* nodo, int id) {
+        if (nodo == nullptr) return false;
+        if (nodo->id == id) return true;
+        if (id < nodo->id) return buscarMiembro(nodo->izquierdo, id);
+        return buscarMiembro(nodo->derecho, id);
+    }
+
+    // Muestra los ancestros de un nodo (si existen)
+    bool mostrarAncestros(Miembro* nodo, int id) {
+        if (nodo == nullptr) return false;
+        if (nodo->id == id) return true;
+
+        if (mostrarAncestros(nodo->izquierdo, id) || mostrarAncestros(nodo->derecho, id)) {
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+            return true;
+        }
+        return false;
+    }
+
+    // Verifica si dos nodos están en la misma rama
+    bool verificarRama(Miembro* nodo, int id1, int id2) {
+        if (nodo == nullptr) return false;
+        if (nodo->id == id1 && buscarMiembro(nodo, id2)) return true;
+        if (nodo->id == id2 && buscarMiembro(nodo, id1)) return true;
+        return verificarRama(nodo->izquierdo, id1, id2) || verificarRama(nodo->derecho, id1, id2);
+    }
+
+public:
+    // Constructor: inicializa árbol vacío
+    ArbolGenealogicoAVL() {
+        raiz = nullptr;
+    }
+
+    // Interfaz pública para insertar un nodo
+    void insertarMiembro(int id, string nombre) {
+        raiz = insertarMiembro(raiz, id, nombre);
+    }
+
+    // Interfaz pública para buscar un nodo
+    void buscarMiembro(int id) {
+        if (buscarMiembro(raiz, id))
+            cout << "Miembro encontrado en el arbol." << endl;
+        else
+            cout << "Miembro no encontrado." << endl;
+    }
+
+    // Interfaz pública para eliminar un nodo
+    void eliminarMiembro(int id) {
+        raiz = eliminarMiembro(raiz, id);
+    }
+
+    // Interfaz para mostrar árbol en distintos recorridos
+    void mostrarInorden() {
+        cout << "Recorrido Inorden:" << endl;
+        mostrarInorden(raiz);
+    }
+
+    void mostrarPreorden() {
+        cout << "Recorrido Preorden:" << endl;
+        mostrarPreorden(raiz);
+    }
+
+    void mostrarPostorden() {
+        cout << "Recorrido Postorden:" << endl;
+        mostrarPostorden(raiz);
+    }
+
+    // Interfaz para mostrar ancestros
+    void mostrarAncestros(int id) {
+        cout << "Ancestros del miembro " << id << ":" << endl;
+        if (!mostrarAncestros(raiz, id))
+            cout << "Miembro no encontrado." << endl;
+    }
+
+    // Interfaz para verificar si dos miembros están en la misma rama
+    void verificarRama(int id1, int id2) {
+        if (verificarRama(raiz, id1, id2))
+            cout << "Los miembros estan en la misma rama." << endl;
+        else
+            cout << "Los miembros NO estan en la misma rama." << endl;
+    }
+};
+
+// Muestra el menú de opciones al usuario
+void mostrarMenu() {
+    cout << "== ARBOL GENEALOGICO AVL ==" << endl;
+    cout << "1. Insertar miembro" << endl;
+    cout << "2. Buscar miembro" << endl;
+    cout << "3. Eliminar miembro" << endl;
+    cout << "4. Mostrar inorden" << endl;
+    cout << "5. Mostrar preorden" << endl;
+    cout << "6. Mostrar postorden" << endl;
+    cout << "7. Mostrar ancestros" << endl;
+    cout << "8. Verificar pertenencia a rama" << endl;
+    cout << "9. Salir" << endl;
+    cout << "Option: ";
+}
+
+// Función principal
+int main() {
+    ArbolGenealogicoAVL arbol;  // Crea una instancia del árbol
+    int opcion, id, id2;
+    string nombre;
+
+    do {
+        mostrarMenu();        // Muestra menú
+        cin >> opcion;        // Lee opción del usuario
+
+        switch (opcion) {
+            case 1:
+                cout << "Ingrese ID: ";
+                cin >> id;
+                cout << "Ingrese nombre: ";
+                cin.ignore();              // Limpia el buffer
+                getline(cin, nombre);      // Permite ingresar nombres con espacios
+                arbol.insertarMiembro(id, nombre);
+                break;
+            case 2:
+                cout << "Ingrese ID a buscar: ";
+                cin >> id;
+                arbol.buscarMiembro(id);
+                break;
+            case 3:
+                cout << "Ingrese ID a eliminar: ";
+                cin >> id;
+                arbol.eliminarMiembro(id);
+                break;
+            case 4:
+                arbol.mostrarInorden();
+                break;
+            case 5:
+                arbol.mostrarPreorden();
+                break;
+            case 6:
+                arbol.mostrarPostorden();
+                break;
+            case 7:
+                cout << "Ingrese ID para ver ancestros: ";
+                cin >> id;
+                arbol.mostrarAncestros(id);
+                break;
+            case 8:
+                cout << "Ingrese primer ID: ";
+                cin >> id;
+                cout << "Ingrese segundo ID: ";
+                cin >> id2;
+                arbol.verificarRama(id, id2);
+                break;
+            case 9:
+                cout << "Saliendo..." << endl;
+                break;
+            default:
+                cout << "Opcion no valida." << endl;
+        }
+        cout << endl;
+    } while (opcion != 9);  // Repite hasta que el usuario elija salir
+
+    cout << "== Session Ended. Please Run the code again ==" << endl;
+    return 0;
+}
