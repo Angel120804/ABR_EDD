@@ -1,0 +1,33 @@
+class ArbolGenealogicoAVL {
+private:
+    Miembro* raiz;  // Nodo raíz del árbol
+
+    int obtenerAltura(Miembro* miembro) {
+        if (miembro == nullptr) return 0;
+        return miembro->altura;
+    }
+
+    int obtenerBalance(Miembro* miembro) {
+        if (miembro == nullptr) return 0;
+        return obtenerAltura(miembro->izquierdo) - obtenerAltura(miembro->derecho);
+    }
+
+    Miembro* rotacionDerecha(Miembro* y) {
+        Miembro* x = y->izquierdo;
+        Miembro* T2 = x->derecho;
+        x->derecho = y;
+        y->izquierdo = T2;
+        y->altura = maximo(obtenerAltura(y->izquierdo), obtenerAltura(y->derecho)) + 1;
+        x->altura = maximo(obtenerAltura(x->izquierdo), obtenerAltura(x->derecho)) + 1;
+        return x;
+    }
+
+    Miembro* rotacionIzquierda(Miembro* x) {
+        Miembro* y = x->derecho;
+        Miembro* T2 = y->izquierdo;
+        y->izquierdo = x;
+        x->derecho = T2;
+        x->altura = maximo(obtenerAltura(x->izquierdo), obtenerAltura(x->derecho)) + 1;
+        y->altura = maximo(obtenerAltura(y->izquierdo), obtenerAltura(y->derecho)) + 1;
+        return y;
+    }
