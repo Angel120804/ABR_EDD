@@ -1,0 +1,48 @@
+    void mostrarInorden(Miembro* nodo) {
+        if (nodo != nullptr) {
+            mostrarInorden(nodo->izquierdo);
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+            mostrarInorden(nodo->derecho);
+        }
+    }
+
+    void mostrarPreorden(Miembro* nodo) {
+        if (nodo != nullptr) {
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+            mostrarPreorden(nodo->izquierdo);
+            mostrarPreorden(nodo->derecho);
+        }
+    }
+
+    void mostrarPostorden(Miembro* nodo) {
+        if (nodo != nullptr) {
+            mostrarPostorden(nodo->izquierdo);
+            mostrarPostorden(nodo->derecho);
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+        }
+    }
+
+    bool buscarMiembro(Miembro* nodo, int id) {
+        if (nodo == nullptr) return false;
+        if (nodo->id == id) return true;
+        if (id < nodo->id) return buscarMiembro(nodo->izquierdo, id);
+        return buscarMiembro(nodo->derecho, id);
+    }
+
+    bool mostrarAncestros(Miembro* nodo, int id) {
+        if (nodo == nullptr) return false;
+        if (nodo->id == id) return true;
+
+        if (mostrarAncestros(nodo->izquierdo, id) || mostrarAncestros(nodo->derecho, id)) {
+            cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
+            return true;
+        }
+        return false;
+    }
+
+    bool verificarRama(Miembro* nodo, int id1, int id2) {
+        if (nodo == nullptr) return false;
+        if (nodo->id == id1 && buscarMiembro(nodo, id2)) return true;
+        if (nodo->id == id2 && buscarMiembro(nodo, id1)) return true;
+        return verificarRama(nodo->izquierdo, id1, id2) || verificarRama(nodo->derecho, id1, id2);
+    }
