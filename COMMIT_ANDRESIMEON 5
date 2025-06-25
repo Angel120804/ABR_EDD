@@ -1,1 +1,97 @@
+public:
+    ArbolGenealogicoAVL() { raiz = nullptr; }
 
+    void insertarMiembro(int id, string nombre) {
+        raiz = insertarMiembro(raiz, id, nombre);
+    }
+
+    void buscarMiembro(int id) {
+        if (buscarMiembro(raiz, id))
+            cout << "Miembro encontrado en el arbol." << endl;
+        else
+            cout << "Miembro no encontrado." << endl;
+    }
+
+    void eliminarMiembro(int id) {
+        raiz = eliminarMiembro(raiz, id);
+    }
+
+    void mostrarInorden() {
+        cout << "Recorrido Inorden:" << endl;
+        mostrarInorden(raiz);
+    }
+
+    void mostrarPreorden() {
+        cout << "Recorrido Preorden:" << endl;
+        mostrarPreorden(raiz);
+    }
+
+    void mostrarPostorden() {
+        cout << "Recorrido Postorden:" << endl;
+        mostrarPostorden(raiz);
+    }
+
+    void mostrarAncestros(int id) {
+        cout << "Ancestros del miembro " << id << ":" << endl;
+        if (!mostrarAncestros(raiz, id))
+            cout << "Miembro no encontrado." << endl;
+    }
+
+    void verificarRama(int id1, int id2) {
+        if (verificarRama(raiz, id1, id2))
+            cout << "Los miembros estan en la misma rama." << endl;
+        else
+            cout << "Los miembros NO estan en la misma rama." << endl;
+    }
+};
+
+// Muestra las opciones disponibles
+void mostrarMenu() {
+    cout << "== ARBOL GENEALOGICO AVL ==" << endl;
+    cout << "1. Insertar miembro\n2. Buscar miembro\n3. Eliminar miembro\n4. Mostrar inorden\n";
+    cout << "5. Mostrar preorden\n6. Mostrar postorden\n7. Mostrar ancestros\n";
+    cout << "8. Verificar pertenencia a rama\n9. Salir\nOption: ";
+}
+
+// Función principal del programa
+int main() {
+    ArbolGenealogicoAVL arbol;
+    int opcion, id, id2;
+    string nombre;
+
+    do {
+        mostrarMenu();
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1:
+                cout << "Ingrese ID: "; cin >> id;
+                cout << "Ingrese nombre: "; cin.ignore(); getline(cin, nombre);
+                arbol.insertarMiembro(id, nombre); break;
+            case 2:
+                cout << "Ingrese ID a buscar: "; cin >> id;
+                arbol.buscarMiembro(id); break;
+            case 3:
+                cout << "Ingrese ID a eliminar: "; cin >> id;
+                arbol.eliminarMiembro(id); break;
+            case 4: arbol.mostrarInorden(); break;
+            case 5: arbol.mostrarPreorden(); break;
+            case 6: arbol.mostrarPostorden(); break;
+            case 7:
+                cout << "Ingrese ID para ver ancestros: "; cin >> id;
+                arbol.mostrarAncestros(id); break;
+            case 8:
+                cout << "Ingrese primer ID: "; cin >> id;
+                cout << "Ingrese segundo ID: "; cin >> id2;
+                arbol.verificarRama(id, id2); break;
+            case 9:
+                cout << "Saliendo..." << endl; break;
+            default:
+                cout << "Opcion no valida." << endl;
+        }
+        cout << endl;
+    } while (opcion != 9);
+
+    cout << "== Session Ended. Please Run the code again ==" << endl;
+    return 0;
+}
