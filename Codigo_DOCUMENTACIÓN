@@ -1,3 +1,4 @@
+
 #include <iostream>    // Incluye la biblioteca para entrada y salida de datos
 #include <string>      // Permite el uso del tipo de dato string
 using namespace std;   // Usa el espacio de nombres estándar para evitar escribir "std::"
@@ -23,13 +24,13 @@ private:
 
     // Obtiene la altura de un nodo
     int obtenerAltura(Miembro* miembro) {
-        if (miembro == nullptr) return 0;
+        if (miembro == NULL) return 0;
         return miembro->altura;
     }
 
     // Calcula el factor de balance de un nodo
     int obtenerBalance(Miembro* miembro) {
-        if (miembro == nullptr) return 0;
+        if (miembro == NULL) return 0;
         return obtenerAltura(miembro->izquierdo) - obtenerAltura(miembro->derecho);
     }
 
@@ -66,12 +67,12 @@ private:
     // Inserta un miembro en el árbol de forma recursiva
     Miembro* insertarMiembro(Miembro* nodo, int id, string nombre) {
         // Inserción normal como en un árbol binario de búsqueda
-        if (nodo == nullptr) {
+        if (nodo == NULL) {
             Miembro* nuevo = new Miembro;
             nuevo->id = id;
             nuevo->nombre = nombre;
-            nuevo->izquierdo = nullptr;
-            nuevo->derecho = nullptr;
+            nuevo->izquierdo = NULL;
+            nuevo->derecho = NULL;
             nuevo->altura = 1;
             return nuevo;
         }
@@ -111,26 +112,26 @@ private:
     // Encuentra el nodo con el valor mínimo en un subárbol
     Miembro* encontrarMinimo(Miembro* nodo) {
         Miembro* actual = nodo;
-        while (actual->izquierdo != nullptr)
+        while (actual->izquierdo != NULL)
             actual = actual->izquierdo;
         return actual;
     }
 
     // Elimina un miembro del árbol
     Miembro* eliminarMiembro(Miembro* raiz, int id) {
-        if (raiz == nullptr) return raiz;
+        if (raiz == NULL) return raiz;
 
         if (id < raiz->id)
             raiz->izquierdo = eliminarMiembro(raiz->izquierdo, id);
         else if (id > raiz->id)
             raiz->derecho = eliminarMiembro(raiz->derecho, id);
         else {
-            if ((raiz->izquierdo == nullptr) || (raiz->derecho == nullptr)) {
+            if ((raiz->izquierdo == NULL) || (raiz->derecho == NULL)) {
                 Miembro* temp = raiz->izquierdo ? raiz->izquierdo : raiz->derecho;
 
-                if (temp == nullptr) {
+                if (temp == NULL) {
                     temp = raiz;
-                    raiz = nullptr;
+                    raiz = NULL;
                 } else {
                     *raiz = *temp;
                 }
@@ -143,7 +144,7 @@ private:
             }
         }
 
-        if (raiz == nullptr) return raiz;
+        if (raiz == NULL) return raiz;
 
         // Actualiza altura y balancea
         raiz->altura = 1 + maximo(obtenerAltura(raiz->izquierdo), obtenerAltura(raiz->derecho));
@@ -171,7 +172,7 @@ private:
 
     // Muestra el árbol en orden (izquierda - raíz - derecha)
     void mostrarInorden(Miembro* nodo) {
-        if (nodo != nullptr) {
+        if (nodo != NULL) {
             mostrarInorden(nodo->izquierdo);
             cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
             mostrarInorden(nodo->derecho);
@@ -180,7 +181,7 @@ private:
 
     // Muestra el árbol en preorden (raíz - izquierda - derecha)
     void mostrarPreorden(Miembro* nodo) {
-        if (nodo != nullptr) {
+        if (nodo != NULL) {
             cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
             mostrarPreorden(nodo->izquierdo);
             mostrarPreorden(nodo->derecho);
@@ -189,7 +190,7 @@ private:
 
     // Muestra el árbol en postorden (izquierda - derecha - raíz)
     void mostrarPostorden(Miembro* nodo) {
-        if (nodo != nullptr) {
+        if (nodo != NULL) {
             mostrarPostorden(nodo->izquierdo);
             mostrarPostorden(nodo->derecho);
             cout << "ID: " << nodo->id << ", Nombre: " << nodo->nombre << endl;
@@ -198,7 +199,7 @@ private:
 
     // Busca si existe un miembro con el ID dado
     bool buscarMiembro(Miembro* nodo, int id) {
-        if (nodo == nullptr) return false;
+        if (nodo == NULL) return false;
         if (nodo->id == id) return true;
         if (id < nodo->id) return buscarMiembro(nodo->izquierdo, id);
         return buscarMiembro(nodo->derecho, id);
@@ -206,7 +207,7 @@ private:
 
     // Muestra los ancestros de un nodo (si existen)
     bool mostrarAncestros(Miembro* nodo, int id) {
-        if (nodo == nullptr) return false;
+        if (nodo == NULL) return false;
         if (nodo->id == id) return true;
 
         if (mostrarAncestros(nodo->izquierdo, id) || mostrarAncestros(nodo->derecho, id)) {
@@ -218,7 +219,7 @@ private:
 
     // Verifica si dos nodos están en la misma rama
     bool verificarRama(Miembro* nodo, int id1, int id2) {
-        if (nodo == nullptr) return false;
+        if (nodo == NULL) return false;
         if (nodo->id == id1 && buscarMiembro(nodo, id2)) return true;
         if (nodo->id == id2 && buscarMiembro(nodo, id1)) return true;
         return verificarRama(nodo->izquierdo, id1, id2) || verificarRama(nodo->derecho, id1, id2);
@@ -227,7 +228,7 @@ private:
 public:
     // Constructor: inicializa árbol vacío
     ArbolGenealogicoAVL() {
-        raiz = nullptr;
+        raiz = NULL;
     }
 
     // Interfaz pública para insertar un nodo
